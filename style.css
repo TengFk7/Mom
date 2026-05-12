@@ -1,0 +1,128 @@
+/* Base Styles & Utility Classes */
+:root {
+    --gold: #c07c88;
+    --gold-light: #4a252b;
+    --gold-dark: #8b4b56;
+}
+
+html {
+    scroll-behavior: smooth;
+}
+
+body {
+    background-color: #fff0f3;
+    color: var(--gold-light);
+}
+
+/* Glassmorphism Panels */
+.glass-panel {
+    background: rgba(255, 255, 255, 0.4);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(192, 124, 136, 0.3);
+    box-shadow: 0 4px 30px rgba(192, 124, 136, 0.1), 
+                inset 0 0 20px rgba(255, 255, 255, 0.5);
+}
+
+/* Custom Scrollbar for a premium feel */
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: #fff0f3;
+}
+
+::-webkit-scrollbar-thumb {
+    background: rgba(192, 124, 136, 0.4);
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: rgba(192, 124, 136, 0.8);
+}
+
+/* Scroll indicator animation */
+@keyframes scrollLine {
+    0% {
+        transform: translateY(-100%);
+        opacity: 0;
+    }
+    50% {
+        opacity: 1;
+    }
+    100% {
+        transform: translateY(200%);
+        opacity: 0;
+    }
+}
+
+.scroll-line-anim {
+    animation: scrollLine 2s cubic-bezier(0.77, 0, 0.175, 1) infinite;
+}
+
+/* Shadow Text Utility */
+.shadow-text {
+    text-shadow: 0 2px 10px rgba(255,255,255,0.8), 0 0 20px rgba(192,124,136,0.3);
+}
+
+/* Image Hover effects in Memory Lane */
+.memory-frame img {
+    transition: transform 1.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.memory-frame:hover img {
+    transform: scale(1.05);
+}
+
+/* Subtle glow for images */
+.memory-frame {
+    transition: box-shadow 0.5s ease, border-color 0.5s ease;
+}
+
+.memory-frame:hover {
+    box-shadow: 0 10px 40px rgba(192, 124, 136, 0.2), 
+                0 0 30px rgba(192, 124, 136, 0.3),
+                inset 0 0 20px rgba(255, 255, 255, 0.5);
+    border-color: rgba(192, 124, 136, 0.6);
+}
+
+/* Candle Flame Animation */
+.flame-wrapper {
+    width: 20px;
+    height: 40px;
+    z-index: 30;
+}
+.flame {
+    width: 10px;
+    height: 25px;
+    background: #ffebb5;
+    border-radius: 50% 50% 20% 20%;
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    box-shadow: 0 0 10px #ffebb5, 0 0 20px #ffb347, 0 0 30px #ff8c00;
+    animation: flicker 0.1s infinite alternate;
+}
+.flame-glow {
+    width: 40px;
+    height: 40px;
+    background: #ffb347;
+    border-radius: 50%;
+    position: absolute;
+    bottom: -5px;
+    left: 50%;
+    transform: translateX(-50%);
+    filter: blur(15px);
+    opacity: 0.6;
+    animation: glow 2s infinite alternate;
+}
+@keyframes flicker {
+    0% { transform: translateX(-50%) rotate(-1deg) scaleY(1); }
+    100% { transform: translateX(-50%) rotate(1deg) scaleY(1.05); }
+}
+@keyframes glow {
+    0% { opacity: 0.5; transform: translateX(-50%) scale(1); }
+    100% { opacity: 0.8; transform: translateX(-50%) scale(1.2); }
+}
