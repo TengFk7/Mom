@@ -5,7 +5,7 @@
 gsap.registerPlugin(ScrollTrigger);
 
 // ============================================================
-// 1. CUSTOM CURSOR
+// 1. CUSTOM CURSOR  (always active — purely visual, no audio)
 // ============================================================
 const cursorDot      = document.getElementById('cursor-dot');
 const cursorFollower = document.getElementById('cursor-follower');
@@ -26,14 +26,13 @@ function animateCursor() {
 }
 animateCursor();
 
-// Scale cursor on hover of interactive elements
 document.querySelectorAll('a, button, .memory-frame').forEach(el => {
     el.addEventListener('mouseenter', () => {
-        gsap.to(cursorDot, { scale: 1.5, duration: 0.3 });
+        gsap.to(cursorDot,      { scale: 1.5, duration: 0.3 });
         gsap.to(cursorFollower, { scale: 1.5, borderColor: 'rgba(192,124,136,0.9)', duration: 0.3 });
     });
     el.addEventListener('mouseleave', () => {
-        gsap.to(cursorDot, { scale: 1, duration: 0.3 });
+        gsap.to(cursorDot,      { scale: 1, duration: 0.3 });
         gsap.to(cursorFollower, { scale: 1, borderColor: 'rgba(192,124,136,0.6)', duration: 0.3 });
     });
 });
@@ -50,7 +49,7 @@ window.addEventListener('scroll', () => {
 }, { passive: true });
 
 // ============================================================
-// 3. ROSE PETAL PARTICLE SYSTEM
+// 3. ROSE PETAL PARTICLE SYSTEM  (init only — start deferred)
 // ============================================================
 const canvas = document.getElementById('particles-canvas');
 const ctx    = canvas.getContext('2d');
@@ -73,9 +72,7 @@ function initCanvas() {
 }
 
 class Petal {
-    constructor(startFromTop = false) {
-        this.reset(startFromTop);
-    }
+    constructor(startFromTop = false) { this.reset(startFromTop); }
     reset(startFromTop = false) {
         this.x      = Math.random() * width;
         this.y      = startFromTop ? -20 : Math.random() * height;
@@ -90,10 +87,10 @@ class Petal {
         this.color = PETAL_COLORS[Math.floor(Math.random() * PETAL_COLORS.length)];
     }
     update() {
-        this.wobble    += this.wobbleSpeed;
-        this.x         += this.speedX + Math.sin(this.wobble) * 0.7;
-        this.y         += this.speedY;
-        this.rotation  += this.rotationSpeed;
+        this.wobble   += this.wobbleSpeed;
+        this.x        += this.speedX + Math.sin(this.wobble) * 0.7;
+        this.y        += this.speedY;
+        this.rotation += this.rotationSpeed;
         if (this.y > height + 30) this.reset(true);
         if (this.x < -30)         this.x = width + 30;
         if (this.x > width + 30)  this.x = -30;
@@ -103,14 +100,11 @@ class Petal {
         ctx.globalAlpha = this.opacity;
         ctx.translate(this.x, this.y);
         ctx.rotate(this.rotation);
-
-        // Petal shape via bezier
         ctx.beginPath();
         const s = this.size;
         ctx.moveTo(0, -s * 0.5);
         ctx.bezierCurveTo( s * 0.55, -s * 0.5,  s * 0.55,  s * 0.5, 0,  s * 0.5);
         ctx.bezierCurveTo(-s * 0.55,  s * 0.5, -s * 0.55, -s * 0.5, 0, -s * 0.5);
-
         const [r, g, b] = this.color;
         const grad = ctx.createRadialGradient(0, -s * 0.1, 0, 0, 0, s * 0.6);
         grad.addColorStop(0, `rgba(${r},${g},${b},1)`);
@@ -126,6 +120,7 @@ function initPetals() {
     for (let i = 0; i < PETAL_COUNT; i++) petals.push(new Petal(false));
 }
 
+let petalsAnimating = false;
 function animatePetals() {
     ctx.clearRect(0, 0, width, height);
     petals.forEach(p => { p.update(); p.draw(); });
@@ -141,30 +136,22 @@ window.addEventListener('scroll', () => {
 }, { passive: true });
 
 window.addEventListener('resize', () => { initCanvas(); initPetals(); });
+
+// Pre-calculate canvas size but DON'T start drawing yet
 initCanvas();
-initPetals();
-animatePetals();
 
 // ============================================================
-// 4. LOADING SCREEN — CINEMATIC CURTAIN REVEAL
+// 4. LOADING SCREEN — CINEMATIC CURTAIN REVEAL  (deferred)
 // ============================================================
 const loadingScreen = document.getElementById('loading-screen');
 
 function revealSite() {
-    // Stop the CSS pulse so GSAP can fade cleanly
     document.querySelector('.loading-content').style.animation = 'none';
-
-    // Step 1: Fade out the loading text with a gentle float up
     gsap.to('.loading-content', {
-        opacity: 0,
-        y: -24,
-        duration: 0.7,
-        ease: 'power2.in',
+        opacity: 0, y: -24, duration: 0.7, ease: 'power2.in',
         onComplete: () => {
-            // Step 2: Open the curtains after text has faded
             loadingScreen.classList.add('open');
             setTimeout(() => {
-                // Step 3: Hide loading screen and start hero
                 loadingScreen.classList.add('hidden');
                 startHeroTimeline();
             }, 1500);
@@ -172,18 +159,12 @@ function revealSite() {
     });
 }
 
-// Show loading screen for 2.2s then open curtains
-window.addEventListener('DOMContentLoaded', () => {
-    setTimeout(revealSite, 2200);
-});
-
 // ============================================================
 // 5. GSAP HERO TIMELINE
 // ============================================================
 function startHeroTimeline() {
     const tl = gsap.timeline({ defaults: { ease: 'power4.out' } });
-
-    tl.to('#hero-subtitle', { y: 0, opacity: 1, duration: 1.2, delay: 0.2 })
+    tl.to('#hero-subtitle',    { y: 0, opacity: 1, duration: 1.2, delay: 0.2 })
       .to('#hero-cake-container', { scale: 1, opacity: 1, duration: 1.8, ease: 'back.out(1.3)' }, '-=0.8')
       .to('#candle-flame', {
             opacity: 1, scale: 1,
@@ -207,16 +188,13 @@ function triggerSparkles() {
             setTimeout(() => s.classList.remove('active'), 900);
         }, i * 60);
     });
-    // Repeat pulse
     setTimeout(triggerSparkles, 5000);
 }
 
 // ============================================================
-// 7. SCROLL ANIMATIONS (GSAP + ScrollTrigger)
+// 7. SCROLL ANIMATIONS  (registered after gate tap)
 // ============================================================
-window.addEventListener('load', () => {
-
-    // Memory title fade-in
+function initScrollAnimations() {
     gsap.fromTo('.memory-title-container',
         { opacity: 0, y: 40 },
         {
@@ -229,7 +207,6 @@ window.addEventListener('load', () => {
         }
     );
 
-    // Polaroid frame staggered reveal
     gsap.utils.toArray('.memory-frame').forEach((frame) => {
         gsap.to(frame, {
             y: 0, opacity: 1, duration: 1.4, ease: 'power3.out',
@@ -241,7 +218,6 @@ window.addEventListener('load', () => {
         });
     });
 
-    // Message container reveal
     gsap.fromTo('.message-container',
         { scale: 0.92, opacity: 0, y: 50 },
         {
@@ -254,15 +230,13 @@ window.addEventListener('load', () => {
         }
     );
 
-    // Footer reveal
     gsap.to('.footer-content', {
         y: 0, opacity: 1, duration: 1.5, ease: 'power3.out',
         scrollTrigger: { trigger: '#footer', start: 'top 80%' }
     });
 
-    // Floating hearts in message section
     animateFloatingHearts();
-});
+}
 
 // ============================================================
 // 8. MESSAGE TEXT LINE REVEAL
@@ -279,27 +253,30 @@ function revealMessageLines() {
 // ============================================================
 document.querySelectorAll('[data-tilt]').forEach(card => {
     card.addEventListener('mousemove', (e) => {
-        const rect   = card.getBoundingClientRect();
-        const x      = e.clientX - rect.left;
-        const y      = e.clientY - rect.top;
-        const cx     = rect.width  / 2;
-        const cy     = rect.height / 2;
-        const rotX   = ((y - cy) / cy) * -8;
-        const rotY   = ((x - cx) / cx) *  8;
-        card.style.transform = `perspective(900px) rotateX(${rotX}deg) rotateY(${rotY}deg) scale(1.03)`;
+        const rect = card.getBoundingClientRect();
+        const x    = e.clientX - rect.left;
+        const y    = e.clientY - rect.top;
+        const cx   = rect.width  / 2;
+        const cy   = rect.height / 2;
+        const rotX = ((y - cy) / cy) * -8;
+        const rotY = ((x - cx) / cx) *  8;
+        card.style.transform  = `perspective(900px) rotateX(${rotX}deg) rotateY(${rotY}deg) scale(1.03)`;
         card.style.transition = 'transform 0.1s ease, box-shadow 0.3s ease';
     });
     card.addEventListener('mouseleave', () => {
-        card.style.transform = 'perspective(900px) rotateX(0deg) rotateY(0deg) scale(1)';
+        card.style.transform  = 'perspective(900px) rotateX(0deg) rotateY(0deg) scale(1)';
         card.style.transition = 'transform 0.6s ease, box-shadow 0.4s ease';
     });
 });
 
 // ============================================================
-// 10. MUSIC — Autoplay Gate (satisfies browser gesture policy)
+// 10. AUTOPLAY GATE — single entry point for everything
 // ============================================================
-const bgMusic    = document.getElementById('bg-music');
+const bgMusic      = document.getElementById('bg-music');
 const autoplayGate = document.getElementById('autoplay-gate');
+
+// Pre-load audio while the gate is showing (no sound yet)
+window.addEventListener('DOMContentLoaded', () => { bgMusic.load(); });
 
 function fadeIn(audio, duration = 3000) {
     audio.volume = 0;
@@ -316,24 +293,28 @@ function fadeIn(audio, duration = 3000) {
     }, step);
 }
 
-function dismissGateAndPlay() {
-    // Fade out the gate overlay
-    autoplayGate.style.opacity = '0';
+function dismissGateAndStart() {
+    // 1. Fade out the gate overlay
+    autoplayGate.style.opacity      = '0';
     autoplayGate.style.pointerEvents = 'none';
-    setTimeout(() => autoplayGate.style.display = 'none', 650);
+    setTimeout(() => { autoplayGate.style.display = 'none'; }, 650);
 
-    // Play music immediately (this tap IS the user gesture)
+    // 2. Start music (tap IS the required user gesture)
     bgMusic.play()
         .then(() => fadeIn(bgMusic))
-        .catch((err) => console.warn('Audio play failed:', err));
+        .catch(err => console.warn('Audio play failed:', err));
+
+    // 3. Start petals
+    initPetals();
+    animatePetals();
+
+    // 4. Start curtain reveal after a short pause
+    setTimeout(revealSite, 2200);
+
+    // 5. Register scroll animations (after GSAP/DOM is ready)
+    initScrollAnimations();
 }
 
-// Gate overlay: any click/touch/keypress dismisses it and starts music
-autoplayGate.addEventListener('click',      dismissGateAndPlay, { once: true });
-autoplayGate.addEventListener('touchstart', dismissGateAndPlay, { once: true });
-autoplayGate.addEventListener('keydown',    dismissGateAndPlay, { once: true });
-
-// Preload audio immediately so it's ready when gate is dismissed
-window.addEventListener('DOMContentLoaded', () => {
-    bgMusic.load();
-});
+autoplayGate.addEventListener('click',      dismissGateAndStart, { once: true });
+autoplayGate.addEventListener('touchstart', dismissGateAndStart, { once: true });
+autoplayGate.addEventListener('keydown',    dismissGateAndStart, { once: true });
