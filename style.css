@@ -434,3 +434,113 @@ button:hover ~ .cursor-follower {
 .memory-title-container { opacity: 0; }
 .message-container { opacity: 0; }
 .footer-content { opacity: 0; transform: translateY(32px); }
+
+/* ============================================================
+   BIRTHDAY CELEBRATION OVERLAY — Fireworks + Balloons
+   ============================================================ */
+#birthday-celebration {
+    position: fixed;
+    inset: 0;
+    z-index: 8000;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.8s ease;
+    overflow: hidden;
+}
+#birthday-celebration.visible {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+/* Fireworks canvas — full screen behind everything */
+#fireworks-canvas {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+}
+
+/* Balloon container */
+#balloons-container {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+}
+
+/* Individual balloon */
+.balloon {
+    position: absolute;
+    bottom: -120px;
+    font-size: clamp(2.5rem, 5vw, 4rem);
+    filter: hue-rotate(calc(var(--hue, 0) * 1deg))
+            drop-shadow(0 0 12px hsla(var(--hue, 340), 80%, 60%, 0.7));
+    /* Two independent animations: linear rise + gentle side-sway */
+    animation:
+        balloonRise   7s linear infinite,
+        balloonSway   3.2s ease-in-out infinite alternate;
+    will-change: transform;
+}
+
+/* Smooth, constant upward travel — linear so there is zero jerk */
+@keyframes balloonRise {
+    0%   { transform: translateY(0);       opacity: 0; }
+    8%   { opacity: 1; }
+    92%  { opacity: 0.85; }
+    100% { transform: translateY(-115vh);  opacity: 0; }
+}
+
+/* Gentle left-right sway, completely independent of the rise */
+@keyframes balloonSway {
+    0%   { margin-left: -18px; }
+    100% { margin-left:  18px; }
+}
+
+/* Celebration text box */
+#celebration-text {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 24px;
+    pointer-events: none;
+}
+
+.celeb-sub {
+    font-family: 'Cinzel', serif;
+    font-size: clamp(0.65rem, 2vw, 0.9rem);
+    letter-spacing: 0.8em;
+    color: #c07c88;
+    margin-bottom: 1rem;
+    animation: celebPulse 2s ease-in-out infinite;
+}
+
+.celeb-title {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(2.8rem, 10vw, 6.5rem);
+    font-weight: 800;
+    background: linear-gradient(135deg, #e8b4b8 0%, #c07c88 45%, #8b4b56 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    line-height: 1.1;
+    margin-bottom: 0.6rem;
+    filter: drop-shadow(0 0 30px rgba(192,124,136,0.55));
+    animation: celebPulse 2.5s ease-in-out infinite;
+}
+
+.celeb-subtitle {
+    font-family: 'Playfair Display', serif;
+    font-style: italic;
+    font-size: clamp(1rem, 3vw, 1.6rem);
+    color: #8b4b56;
+    opacity: 0.85;
+    letter-spacing: 0.05em;
+}
+
+@keyframes celebPulse {
+    0%, 100% { opacity: 1; }
+    50%       { opacity: 0.75; }
+}

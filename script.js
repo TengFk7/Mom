@@ -318,3 +318,153 @@ function dismissGateAndStart() {
 autoplayGate.addEventListener('click',      dismissGateAndStart, { once: true });
 autoplayGate.addEventListener('touchstart', dismissGateAndStart, { once: true });
 autoplayGate.addEventListener('keydown',    dismissGateAndStart, { once: true });
+
+// ============================================================
+// 11. BIRTHDAY CELEBRATION — Fireworks + Balloons on scroll bottom
+// ============================================================
+const celebrationOverlay = document.getElementById('birthday-celebration');
+const fwCanvas           = document.getElementById('fireworks-canvas');
+const fwCtx              = fwCanvas.getContext('2d');
+
+let fwW, fwH;
+let celebActive   = false;
+let fwAnimFrameId = null;
+let particles     = [];
+
+// Resize fireworks canvas to full viewport
+function resizeFireworks() {
+    fwW = fwCanvas.width  = window.innerWidth;
+    fwH = fwCanvas.height = window.innerHeight;
+}
+resizeFireworks();
+window.addEventListener('resize', resizeFireworks, { passive: true });
+
+// ── Firework Particle ──────────────────────────────────────
+class FireworkParticle {
+    constructor(x, y, color) {
+        this.x    = x; this.y = y;
+        this.color = color;
+        const angle = Math.random() * Math.PI * 2;
+        const speed = Math.random() * 5 + 2;
+        this.vx      = Math.cos(angle) * speed;
+        this.vy      = Math.sin(angle) * speed;
+        this.gravity = 0.12;
+        this.alpha   = 1;
+        this.decay   = Math.random() * 0.018 + 0.01;
+        this.size    = Math.random() * 4 + 2;
+        this.trail   = [];
+    }
+    update() {
+        this.trail.push({ x: this.x, y: this.y });
+        if (this.trail.length > 6) this.trail.shift();
+        this.vy   += this.gravity;
+        this.x    += this.vx;
+        this.y    += this.vy;
+        this.alpha -= this.decay;
+        this.vx   *= 0.98;
+    }
+    draw(ctx) {
+        // Draw trail
+        for (let i = 0; i < this.trail.length; i++) {
+            const a = (i / this.trail.length) * this.alpha * 0.5;
+            ctx.beginPath();
+            ctx.arc(this.trail[i].x, this.trail[i].y, this.size * 0.5 * (i / this.trail.length), 0, Math.PI * 2);
+            ctx.fillStyle = this.color.replace(')', `,${a})`).replace('rgb', 'rgba');
+            ctx.fill();
+        }
+        // Draw particle
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+        ctx.fillStyle = this.color.replace(')', `,${this.alpha})`).replace('rgb', 'rgba');
+        ctx.fill();
+        // Sparkle glow
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.size * 1.5, 0, Math.PI * 2);
+        ctx.fillStyle = this.color.replace(')', `,${this.alpha * 0.3})`).replace('rgb', 'rgba');
+        ctx.fill();
+    }
+    isDead() { return this.alpha <= 0; }
+}
+
+// Palettes that match the site's aesthetic
+const FW_PALETTES = [
+    ['rgb(255,180,193)', 'rgb(255,200,210)', 'rgb(232,180,184)', 'rgb(255,220,228)'],  // pinks
+    ['rgb(255,215,0)',   'rgb(255,240,150)', 'rgb(255,180,100)', 'rgb(255,200,50)'],   // golds
+    ['rgb(180,220,255)', 'rgb(210,240,255)', 'rgb(150,200,255)', 'rgb(255,255,255)'],  // blues
+    ['rgb(200,180,255)', 'rgb(220,200,255)', 'rgb(170,150,255)', 'rgb(255,220,255)'],  // purples
+];
+
+function launchFirework() {
+    const palette = FW_PALETTES[Math.floor(Math.random() * FW_PALETTES.length)];
+    // Aim for upper 55% of screen
+    const x = Math.random() * fwW;
+    const y = Math.random() * fwH * 0.55 + fwH * 0.05;
+    const count = Math.floor(Math.random() * 60) + 70;
+    for (let i = 0; i < count; i++) {
+        const color = palette[Math.floor(Math.random() * palette.length)];
+        particles.push(new FireworkParticle(x, y, color));
+    }
+}
+
+let fwInterval = null;
+
+function startFireworks() {
+    if (fwInterval) return;
+    launchFirework();
+    fwInterval = setInterval(launchFirework, 700);
+    renderFireworks();
+}
+
+function stopFireworks() {
+    clearInterval(fwInterval);
+    fwInterval = null;
+    if (fwAnimFrameId) {
+        cancelAnimationFrame(fwAnimFrameId);
+        fwAnimFrameId = null;
+    }
+    fwCtx.clearRect(0, 0, fwW, fwH);
+    particles = [];
+}
+
+function renderFireworks() {
+    fwCtx.fillStyle = 'rgba(255,240,243,0.18)'; // ghostly trail
+    fwCtx.fillRect(0, 0, fwW, fwH);
+
+    particles = particles.filter(p => {
+        p.update();
+        p.draw(fwCtx);
+        return !p.isDead();
+    });
+
+    fwAnimFrameId = requestAnimationFrame(renderFireworks);
+}
+
+// ── Show / Hide overlay ───────────────────────────────────
+function showCelebration() {
+    if (celebActive) return;
+    celebActive = true;
+    celebrationOverlay.classList.add('visible');
+    startFireworks();
+}
+function hideCelebration() {
+    if (!celebActive) return;
+    celebActive = false;
+    celebrationOverlay.classList.remove('visible');
+    stopFireworks();
+}
+
+// ── Scroll-to-bottom detection ─────────────────────────────
+function checkScrollBottom() {
+    const scrollTop  = window.scrollY || document.documentElement.scrollTop;
+    const docHeight  = document.documentElement.scrollHeight;
+    const winHeight  = window.innerHeight;
+    const atBottom   = (scrollTop + winHeight) >= (docHeight - 40); // 40px threshold
+
+    if (atBottom) {
+        showCelebration();
+    } else {
+        hideCelebration();
+    }
+}
+
+window.addEventListener('scroll', checkScrollBottom, { passive: true });
