@@ -151,11 +151,25 @@ animatePetals();
 const loadingScreen = document.getElementById('loading-screen');
 
 function revealSite() {
-    loadingScreen.classList.add('open');
-    setTimeout(() => {
-        loadingScreen.classList.add('hidden');
-        startHeroTimeline();
-    }, 1600);
+    // Stop the CSS pulse so GSAP can fade cleanly
+    document.querySelector('.loading-content').style.animation = 'none';
+
+    // Step 1: Fade out the loading text with a gentle float up
+    gsap.to('.loading-content', {
+        opacity: 0,
+        y: -24,
+        duration: 0.7,
+        ease: 'power2.in',
+        onComplete: () => {
+            // Step 2: Open the curtains after text has faded
+            loadingScreen.classList.add('open');
+            setTimeout(() => {
+                // Step 3: Hide loading screen and start hero
+                loadingScreen.classList.add('hidden');
+                startHeroTimeline();
+            }, 1500);
+        }
+    });
 }
 
 // Show loading screen for 2.2s then open curtains
@@ -172,7 +186,9 @@ function startHeroTimeline() {
     tl.to('#hero-subtitle', { y: 0, opacity: 1, duration: 1.2, delay: 0.2 })
       .to('#hero-cake-container', { scale: 1, opacity: 1, duration: 1.8, ease: 'back.out(1.3)' }, '-=0.8')
       .to('#candle-flame', {
-            opacity: 1, scale: 1, duration: 2.5, ease: 'power2.inOut',
+            opacity: 1, scale: 1,
+            transformOrigin: 'bottom center',
+            duration: 2.5, ease: 'power2.inOut',
             onComplete: triggerSparkles
         }, '-=0.5')
       .to('#hero-title',    { y: 0, opacity: 1, duration: 1.8, ease: 'power3.out' }, '-=2')
@@ -280,70 +296,44 @@ document.querySelectorAll('[data-tilt]').forEach(card => {
 });
 
 // ============================================================
-// 10. AMBIENT AUDIO (Web Audio API — no external file needed)
+// 10. MUSIC — Auto-play on load (fade in)
 // ============================================================
-let audioCtx   = null;
-let masterGain = null;
-let isPlaying  = false;
-const audioBtn  = document.getElementById('audio-toggle');
-const audioIcon = document.getElementById('audio-icon');
+const bgMusic = document.getElementById('bg-music');
 
-// Soft chord: C4–E4–G4–C5
-const CHORD_FREQS = [261.63, 329.63, 392.00, 523.25];
-
-function buildAmbientSound() {
-    audioCtx   = new (window.AudioContext || window.webkitAudioContext)();
-    masterGain = audioCtx.createGain();
-    masterGain.gain.setValueAtTime(0, audioCtx.currentTime);
-    masterGain.gain.linearRampToValueAtTime(0.06, audioCtx.currentTime + 2);
-    masterGain.connect(audioCtx.destination);
-
-    CHORD_FREQS.forEach((freq, i) => {
-        const osc    = audioCtx.createOscillator();
-        const gain   = audioCtx.createGain();
-        const filter = audioCtx.createBiquadFilter();
-
-        osc.type = 'sine';
-        osc.frequency.value = freq;
-
-        filter.type = 'lowpass';
-        filter.frequency.value = 900;
-        filter.Q.value = 0.5;
-
-        gain.gain.value = 0.22 - i * 0.03;
-
-        // Slow LFO tremolo
-        const lfo     = audioCtx.createOscillator();
-        const lfoGain = audioCtx.createGain();
-        lfo.frequency.value = 0.2 + i * 0.05;
-        lfoGain.gain.value  = 0.015;
-        lfo.connect(lfoGain);
-        lfoGain.connect(gain.gain);
-        lfo.start();
-
-        osc.connect(filter);
-        filter.connect(gain);
-        gain.connect(masterGain);
-        osc.start();
-    });
+function fadeIn(audio, duration = 2000) {
+    audio.volume = 0;
+    const step      = 50;
+    const target    = 0.75;
+    const increment = target / (duration / step);
+    const timer = setInterval(() => {
+        if (audio.volume < target - increment) {
+            audio.volume = Math.min(audio.volume + increment, target);
+        } else {
+            audio.volume = target;
+            clearInterval(timer);
+        }
+    }, step);
 }
 
-function toggleAudio() {
-    if (!audioCtx) {
-        buildAmbientSound();
-        isPlaying = true;
-    } else if (isPlaying) {
-        masterGain.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 1);
-        setTimeout(() => audioCtx.suspend(), 1100);
-        isPlaying = false;
-    } else {
-        audioCtx.resume();
-        masterGain.gain.linearRampToValueAtTime(0.06, audioCtx.currentTime + 1);
-        isPlaying = true;
-    }
-
-    audioBtn.classList.toggle('active', isPlaying);
-    audioIcon.textContent = isPlaying ? '♫' : '♪';
+function startMusic() {
+    bgMusic.play()
+        .then(() => {
+            // Autoplay allowed — fade in smoothly
+            fadeIn(bgMusic);
+        })
+        .catch(() => {
+            // Autoplay blocked by browser — wait for first user interaction
+            const unlock = () => {
+                bgMusic.play().then(() => fadeIn(bgMusic)).catch(() => {});
+                document.removeEventListener('click',      unlock);
+                document.removeEventListener('touchstart', unlock);
+                document.removeEventListener('keydown',    unlock);
+            };
+            document.addEventListener('click',      unlock, { once: true });
+            document.addEventListener('touchstart', unlock, { once: true });
+            document.addEventListener('keydown',    unlock, { once: true });
+        });
 }
 
-audioBtn.addEventListener('click', toggleAudio);
+// Start music as soon as possible
+window.addEventListener('DOMContentLoaded', startMusic);

@@ -426,50 +426,7 @@ button:hover ~ .cursor-follower {
     text-shadow: 0 0 20px rgba(192,124,136,0.5), 0 0 40px rgba(192,124,136,0.2);
 }
 
-/* ============================================================
-   AUDIO TOGGLE BUTTON
-   ============================================================ */
-.audio-toggle {
-    position: fixed;
-    bottom: 28px; right: 28px;
-    width: 50px; height: 50px;
-    border-radius: 50%;
-    background: rgba(255,255,255,0.6);
-    backdrop-filter: blur(16px);
-    border: 1px solid rgba(192,124,136,0.3);
-    color: var(--gold-dark);
-    font-size: 20px;
-    cursor: none;
-    z-index: 8000;
-    display: flex; align-items: center; justify-content: center;
-    box-shadow: 0 4px 20px rgba(192,124,136,0.2);
-    transition: all 0.3s ease;
-}
-.audio-toggle:hover {
-    background: rgba(255,255,255,0.85);
-    box-shadow: 0 4px 30px rgba(192,124,136,0.4);
-    transform: scale(1.1);
-}
-.audio-toggle.active {
-    background: rgba(192,124,136,0.15);
-    border-color: var(--gold);
-    animation: audioRipple 2s ease-in-out infinite;
-}
-.audio-icon {
-    display: inline-block;
-    transition: transform 0.3s ease;
-}
-.audio-toggle.active .audio-icon {
-    animation: noteFloat 1.5s ease-in-out infinite;
-}
-@keyframes audioRipple {
-    0%, 100% { box-shadow: 0 0 0 0 rgba(192,124,136,0.3), 0 4px 20px rgba(192,124,136,0.2); }
-    50%       { box-shadow: 0 0 0 10px rgba(192,124,136,0), 0 4px 20px rgba(192,124,136,0.3); }
-}
-@keyframes noteFloat {
-    0%, 100% { transform: translateY(0); }
-    50%       { transform: translateY(-3px); }
-}
+
 
 /* ============================================================
    MEMORY TITLE CONTAINER
