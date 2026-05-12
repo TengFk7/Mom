@@ -296,11 +296,12 @@ document.querySelectorAll('[data-tilt]').forEach(card => {
 });
 
 // ============================================================
-// 10. MUSIC — Auto-play on load (fade in)
+// 10. MUSIC — Autoplay Gate (satisfies browser gesture policy)
 // ============================================================
-const bgMusic = document.getElementById('bg-music');
+const bgMusic    = document.getElementById('bg-music');
+const autoplayGate = document.getElementById('autoplay-gate');
 
-function fadeIn(audio, duration = 2000) {
+function fadeIn(audio, duration = 3000) {
     audio.volume = 0;
     const step      = 50;
     const target    = 0.75;
@@ -315,25 +316,24 @@ function fadeIn(audio, duration = 2000) {
     }, step);
 }
 
-function startMusic() {
+function dismissGateAndPlay() {
+    // Fade out the gate overlay
+    autoplayGate.style.opacity = '0';
+    autoplayGate.style.pointerEvents = 'none';
+    setTimeout(() => autoplayGate.style.display = 'none', 650);
+
+    // Play music immediately (this tap IS the user gesture)
     bgMusic.play()
-        .then(() => {
-            // Autoplay allowed — fade in smoothly
-            fadeIn(bgMusic);
-        })
-        .catch(() => {
-            // Autoplay blocked by browser — wait for first user interaction
-            const unlock = () => {
-                bgMusic.play().then(() => fadeIn(bgMusic)).catch(() => {});
-                document.removeEventListener('click',      unlock);
-                document.removeEventListener('touchstart', unlock);
-                document.removeEventListener('keydown',    unlock);
-            };
-            document.addEventListener('click',      unlock, { once: true });
-            document.addEventListener('touchstart', unlock, { once: true });
-            document.addEventListener('keydown',    unlock, { once: true });
-        });
+        .then(() => fadeIn(bgMusic))
+        .catch((err) => console.warn('Audio play failed:', err));
 }
 
-// Start music as soon as possible
-window.addEventListener('DOMContentLoaded', startMusic);
+// Gate overlay: any click/touch/keypress dismisses it and starts music
+autoplayGate.addEventListener('click',      dismissGateAndPlay, { once: true });
+autoplayGate.addEventListener('touchstart', dismissGateAndPlay, { once: true });
+autoplayGate.addEventListener('keydown',    dismissGateAndPlay, { once: true });
+
+// Preload audio immediately so it's ready when gate is dismissed
+window.addEventListener('DOMContentLoaded', () => {
+    bgMusic.load();
+});

@@ -82,6 +82,25 @@
         <source src="Lukas Graham - 7 Years.mp3" type="audio/mpeg">
     </audio>
 
+    <!-- Autoplay Gate Overlay (satisfies browser gesture policy) -->
+    <div id="autoplay-gate"
+         style="position:fixed;inset:0;z-index:99999;display:flex;flex-direction:column;
+                align-items:center;justify-content:center;cursor:pointer;
+                background:rgba(74,37,43,0.72);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
+                transition:opacity 0.6s ease;">
+        <div style="text-align:center;color:#ffe4e8;font-family:'Cinzel',serif;user-select:none;">
+            <div style="font-size:2.5rem;margin-bottom:1rem;animation:gatePulse 2s ease-in-out infinite;">♡</div>
+            <p style="font-size:0.7rem;letter-spacing:0.4em;text-transform:uppercase;opacity:0.7;margin-bottom:0.6rem;">แตะเพื่อเปิด</p>
+            <p style="font-size:1.1rem;letter-spacing:0.2em;text-transform:uppercase;">Tap to Begin</p>
+        </div>
+        <style>
+            @keyframes gatePulse {
+                0%,100% { transform:scale(1);   opacity:0.8; }
+                50%      { transform:scale(1.25); opacity:1;   }
+            }
+        </style>
+    </div>
+
     <main class="relative z-10">
 
         <!-- ── Section 1: Hero ── -->
