@@ -189,17 +189,20 @@ window.addEventListener('load', () => {
         });
 
         // Add subtle parallax to the image inside the frame
-        const innerImg = frame.querySelector('.absolute.inset-0.bg-cover');
-        gsap.to(innerImg, {
-            yPercent: 15, // Move image 15% downwards while scrolling past
-            ease: "none",
-            scrollTrigger: {
-                trigger: frame,
-                start: "top bottom", 
-                end: "bottom top",
-                scrub: true
+        const parallaxWrap = frame.querySelector('.parallax-wrap');
+        gsap.fromTo(parallaxWrap,
+            { yPercent: -10 },
+            {
+                yPercent: 10, // Move image downwards while scrolling past
+                ease: "none",
+                scrollTrigger: {
+                    trigger: frame,
+                    start: "top bottom", 
+                    end: "bottom top",
+                    scrub: true
+                }
             }
-        });
+        );
     });
 
     // --- Heartfelt Message Animation ---

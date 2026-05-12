@@ -67,11 +67,11 @@ body {
 }
 
 /* Image Hover effects in Memory Lane */
-.memory-frame img {
+.memory-frame .img-hover-zoom {
     transition: transform 1.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
 }
 
-.memory-frame:hover img {
+.memory-frame:hover .img-hover-zoom {
     transform: scale(1.05);
 }
 
