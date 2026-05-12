@@ -458,7 +458,7 @@ function checkScrollBottom() {
     const scrollTop  = window.scrollY || document.documentElement.scrollTop;
     const docHeight  = document.documentElement.scrollHeight;
     const winHeight  = window.innerHeight;
-    const atBottom   = (scrollTop + winHeight) >= (docHeight - 40); // 40px threshold
+    const atBottom   = (scrollTop + winHeight) >= (docHeight - 2); // ต้องถึงล่างสุดจริงๆ
 
     if (atBottom) {
         showCelebration();
